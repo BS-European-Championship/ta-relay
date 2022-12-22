@@ -2,7 +2,6 @@ import { Client, Models, Packets } from "tournament-assistant-client";
 import { CustomEventEmitter } from "./event-emitter";
 import { Forwarder } from "./forwarder-server";
 
-
 type TARelayEvents = {
     userFinishedSong: Packets.Push.SongFinished;
     matchCreated: Models.Match;
@@ -206,9 +205,12 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
     }
 
     private transformAndBroadcastScore(score: Packets.Push.RealtimeScore) {
+        const player = this.taClient.getPlayer(score.user_guid);
+
         this.forwarder?.broadcast({
             type: 'score',
-            score: score.toObject()
+            score: score.toObject(),
+            user: this.transformUser(player!)
         })
     }
 
