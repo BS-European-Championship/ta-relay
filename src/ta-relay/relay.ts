@@ -122,11 +122,11 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             });
 
             //Sort teams by total score
-            const sortedTeams = Array.from(teamScores.values()).sort(x => x.score);
+            const sortedTeams = Array.from(teamScores.values()).sort((a, b) => a.score - b.score);
 
             //Assign points
             for (let i = 0; i < sortedTeams.length; i++) {
-                sortedTeams[i].teamWithPoints.points = i + 1;
+                sortedTeams[i].teamWithPoints.points = sortedTeams[i].teamWithPoints.points + i + 1;
             }
 
             //Winning team gets a bonus point
@@ -136,7 +136,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             sortedTeams.forEach(x => teamScores.set(x.teamWithPoints.team.id, x));
         });
 
-        return Array.from(teamScores.values()).map(x => x.teamWithPoints).sort(x => -x.points);
+        return Array.from(teamScores.values()).map(x => x.teamWithPoints).sort((a, b) => b.points - a.points);
     }
 
     public resetScores() {
@@ -151,7 +151,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             const match = this.currentlyWatchingMatch;
 
             if (match) {
-                match.associated_users = match.associated_users.filter(x => this.taClient.users.find(y => y.guid === x)?.team.id !== losingTeam.team.id);
+                match.associated_users = match.associated_users.filter(x => this.taClient.users.find(y => y.guid === x)?.team?.id !== losingTeam.team.id);
                 this.taClient.updateMatch(match);
                 this.resetScores();
             }
