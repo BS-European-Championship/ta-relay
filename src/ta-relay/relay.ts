@@ -166,6 +166,13 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         })
     }
 
+    public setAudioPlayer(player: number) {
+        this.forwarder?.broadcast({
+            type: 'setAudioPlayer',
+            player
+        })
+    }
+
     private transformAndBroadcastMatch(match: Models.Match) {
         const players = this.taClient.users.filter(x => x.client_type === Models.User.ClientTypes.Player && match.associated_users.includes(x.guid));
         const coordinator = this.taClient.Coordinators.find(x => match.associated_users.includes(x.guid));

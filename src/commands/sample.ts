@@ -48,4 +48,19 @@ export class Example {
     relay.setTeamsToDisplay(team1, team2);
     interaction.reply('Command forwarded to the overlay');
   }
+
+  @Slash({ description: "switch-audio", name: "switch-audio" })
+  switchAudio(
+    @SlashOption({
+      description: "player-number",
+      name: "player-number",
+      required: true,
+      type: ApplicationCommandOptionType.Number,
+    })
+    playerNumber: number,
+    interaction: CommandInteraction
+  ): void {
+    relay.setAudioPlayer(playerNumber);
+    interaction.reply(`Set audio player to the player ${playerNumber}`);
+  }
 }
