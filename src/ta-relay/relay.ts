@@ -173,6 +173,14 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         })
     }
 
+    public setFinalsPoints(team1: number, team2: number) {
+        this.forwarder?.broadcast({
+            type: 'setFinalsPoints',
+            team1,
+            team2
+        })
+    }
+
     private transformAndBroadcastMatch(match: Models.Match) {
         const players = this.taClient.users.filter(x => x.client_type === Models.User.ClientTypes.Player && match.associated_users.includes(x.guid));
         const coordinator = this.taClient.Coordinators.find(x => match.associated_users.includes(x.guid));

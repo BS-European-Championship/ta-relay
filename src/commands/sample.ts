@@ -63,4 +63,26 @@ export class Example {
     relay.setAudioPlayer(playerNumber);
     interaction.reply(`Set audio player to the player ${playerNumber}`);
   }
+
+  @Slash({ description: "set-finals-points", name: "set-finals-points" })
+  setFinalsPoints(
+    @SlashOption({
+      description: "team1",
+      name: "team1",
+      required: true,
+      type: ApplicationCommandOptionType.Number,
+    })
+    @SlashOption({
+      description: "team2",
+      name: "team2",
+      required: true,
+      type: ApplicationCommandOptionType.Number,
+    })
+    team1: number,
+    team2: number,
+    interaction: CommandInteraction
+  ): void {
+    relay.setFinalsPoints(team1, team2);
+    interaction.reply(`Set finals points to ${team1} ${team2}`);
+  }
 }
