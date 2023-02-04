@@ -9,7 +9,7 @@ export class Example {
     interaction: CommandInteraction
   ): void {
     let response = '';
-    const teams = relay.getTeamPoints();
+    const teams = relay.getAndBroadcastTeamPoints();
 
     for (let i = 0; i < teams.length; i++) {
       const team = teams[i];

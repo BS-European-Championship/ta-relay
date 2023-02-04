@@ -91,9 +91,15 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
 
             this.transformAndBroadcastUser(userUpdated.data);
         });
+
+        this.taClient.on('userLeft', userLeft => {
+            console.log('userLeft:', userLeft);
+
+            this.transformAndBroadcastUser(userLeft.data, { type: 'userLeft' });
+        }); 
     }
 
-    public getTeamPoints(): Team[] {
+    public getAndBroadcastTeamPoints(): Team[] {
         type TeamWithScore = {
             teamWithPoints: Team;
             score: number;
@@ -136,7 +142,10 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             sortedTeams.forEach(x => teamScores.set(x.teamWithPoints.team.id, x));
         });
 
-        return Array.from(teamScores.values()).map(x => x.teamWithPoints).sort((a, b) => b.points - a.points);
+        const points = Array.from(teamScores.values()).map(x => x.teamWithPoints).sort((a, b) => b.points - a.points);
+
+        this.broadcastRoundPoints(points);
+        return points;
     }
 
     public resetScores() {
@@ -144,7 +153,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
     }
 
     public eliminateBottomTeam() {
-        const scores = this.getTeamPoints();
+        const scores = this.getAndBroadcastTeamPoints();
 
         if (scores.length > 0) {
             const losingTeam = scores[scores.length - 1];
@@ -181,6 +190,17 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         })
     }
 
+    private broadcastRoundPoints(teams: Team[]) {
+        this.forwarder?.broadcast({
+            type: 'points',
+    
+            teams: teams.map(i => ({
+                team: i.team.toObject(),
+                points: i.points
+            }))
+        });
+    }
+
     private transformAndBroadcastMatch(match: Models.Match) {
         const players = this.taClient.users.filter(x => x.client_type === Models.User.ClientTypes.Player && match.associated_users.includes(x.guid));
         const coordinator = this.taClient.Coordinators.find(x => match.associated_users.includes(x.guid));
@@ -212,9 +232,9 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         };
     }
 
-    private transformAndBroadcastUser(user: Models.User) {
+    private transformAndBroadcastUser(user: Models.User, overrides?: { type: string }) {
         this.forwarder?.broadcast({
-            type: 'user',
+            type: overrides?.type || 'user',
             user: this.transformUser(user)
         });
     }
