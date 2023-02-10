@@ -32,7 +32,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         this.forwarder = new Forwarder();
 
         this.taClient = new Client("SUPA Relay", {
-            url: "ws://127.0.0.1:2053"
+            url: "ws://tournamentassistant.net:2053"
         });
 
         this.taClient.on('realtimeScore', score => {
