@@ -2,7 +2,7 @@ import { dirname, importx } from "@discordx/importer";
 import type { Interaction, Message } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
-import { TARelay } from "./ta-relay/relay";
+import { TARelay } from "./ta-relay/relay.js";
 import dotenv from 'dotenv';
 
 dotenv.config();

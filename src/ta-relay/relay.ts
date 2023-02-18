@@ -1,6 +1,6 @@
 import { Client, Models, Packets } from "tournament-assistant-client";
-import { CustomEventEmitter } from "./event-emitter";
-import { Forwarder } from "./forwarder-server";
+import { CustomEventEmitter } from "./event-emitter.js";
+import { Forwarder } from "./forwarder-server.js";
 
 type TARelayEvents = {
     userFinishedSong: Packets.Push.SongFinished;

@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { relay } from "../main";
+import { relay } from "../main.js";
 
 import tmi from 'tmi.js';
 
