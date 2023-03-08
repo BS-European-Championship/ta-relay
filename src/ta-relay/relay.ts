@@ -2,29 +2,37 @@ import { Client, Models, Packets } from "tournament-assistant-client";
 import { CustomEventEmitter } from "./event-emitter.js";
 import { Forwarder } from "./forwarder-server.js";
 
-type TARelayEvents = {
+export type TARelayEvents = {
     userFinishedSong: Packets.Push.SongFinished;
     matchCreated: Models.Match;
     scoreRecieved: Packets.Push.RealtimeScore;
     allPlayersFinishedSong: {};
 };
 
-type Team = {
+export type Team = {
     team: Models.Team;
     points: number;
-}
+};
 
-type UserWithScore = {
+export type UserWithScore = {
     user: Models.User;
     score: number;
-}
+};
+
+export type TeamWithScore = {
+    teamWithPoints: Team;
+    score: number;
+};
 
 export class TARelay extends CustomEventEmitter<TARelayEvents> {
     private taClient: Client;
     private forwarder: Forwarder;
 
     private currentlyWatchingMatch: Models.Match | undefined;
-    private userScoresForMap: Map<string, UserWithScore[]> = new Map<string, UserWithScore[]>();
+    private userScoresForMap: Map<string, UserWithScore[]> = new Map<
+        string,
+        UserWithScore[]
+    >();
 
     constructor() {
         super();
@@ -32,117 +40,136 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         this.forwarder = new Forwarder();
 
         this.taClient = new Client("BSEUC Relay", {
-            url: "ws://tournamentassistant.net:2053"
+            url: "ws://tournamentassistant.net:2053",
         });
 
-        this.taClient.on('realtimeScore', score => {
-            console.log('score:', score);
+        this.taClient.on("realtimeScore", (score) => {
+            console.log("score:", score);
 
             this.transformAndBroadcastScore(score.data);
-            this.emit('scoreRecieved', score.data);
+            this.emit("scoreRecieved", score.data);
         });
 
-        this.taClient.on('songFinished', songFinished => {
-            console.log('songFinished:', songFinished);
+        this.taClient.on("songFinished", (songFinished) => {
+            console.log("songFinished:", songFinished);
 
             //Add the score to the results list
-            let existingScores = this.userScoresForMap.get(songFinished.data.beatmap.level_id) ?? [];
+            let existingScores =
+                this.userScoresForMap.get(songFinished.data.beatmap.level_id) ??
+                [];
             existingScores.push({
                 user: songFinished.data.player,
-                score: songFinished.data.score
+                score: songFinished.data.score,
             });
 
-            this.userScoresForMap.set(songFinished.data.beatmap.level_id, existingScores);
+            this.userScoresForMap.set(
+                songFinished.data.beatmap.level_id,
+                existingScores
+            );
 
             this.transformAndBroadcastResult(songFinished.data);
-            this.emit('userFinishedSong', songFinished.data);
+            this.emit("userFinishedSong", songFinished.data);
 
-            const matchPlayerCount = this.taClient.Players.filter(x => this.currentlyWatchingMatch?.associated_users.includes(x.guid))?.length ?? 0;
-            if (this.userScoresForMap.get(songFinished.data.beatmap.level_id)?.length === matchPlayerCount) {
-                this.emit('allPlayersFinishedSong', {});
+            const matchPlayerCount =
+                this.taClient.Players.filter((x) =>
+                    this.currentlyWatchingMatch?.associated_users.includes(
+                        x.guid
+                    )
+                )?.length ?? 0;
+            if (
+                this.userScoresForMap.get(songFinished.data.beatmap.level_id)
+                    ?.length === matchPlayerCount
+            ) {
+                this.emit("allPlayersFinishedSong", {});
             }
         });
 
-        this.taClient.on('matchCreated', matchCreated => {
-            console.log('matchCreated:', matchCreated);
+        this.taClient.on("matchCreated", (matchCreated) => {
+            console.log("matchCreated:", matchCreated);
 
             matchCreated.data.associated_users.push(this.taClient.Self.guid);
             this.taClient.updateMatch(matchCreated.data);
 
             this.currentlyWatchingMatch = matchCreated.data;
 
-            this.emit('matchCreated', matchCreated.data);
+            this.emit("matchCreated", matchCreated.data);
         });
 
-        this.taClient.on('matchUpdated', matchUpdated => {
-            console.log('matchUpdated:', matchUpdated);
+        this.taClient.on("matchUpdated", (matchUpdated) => {
+            console.log("matchUpdated:", matchUpdated);
 
             this.transformAndBroadcastMatch(matchUpdated.data);
         });
 
-        this.taClient.on('playSong', playSong => {
-            console.log('playSong:', playSong);
+        this.taClient.on("playSong", (playSong) => {
+            console.log("playSong:", playSong);
 
-            this.forwarder?.broadcast({ type: 'playSong' });
+            this.forwarder?.broadcast({ type: "playSong" });
         });
 
-        this.taClient.on('userUpdated', userUpdated => {
-            console.log('userUpdated:', userUpdated);
+        this.taClient.on("userUpdated", (userUpdated) => {
+            console.log("userUpdated:", userUpdated);
 
             this.transformAndBroadcastUser(userUpdated.data);
         });
 
-        this.taClient.on('userLeft', userLeft => {
-            console.log('userLeft:', userLeft);
+        this.taClient.on("userLeft", (userLeft) => {
+            console.log("userLeft:", userLeft);
 
-            this.transformAndBroadcastUser(userLeft.data, { type: 'userLeft' });
-        }); 
+            this.transformAndBroadcastUser(userLeft.data, { type: "userLeft" });
+        });
     }
 
     public getAndBroadcastTeamPoints(): Team[] {
-        type TeamWithScore = {
-            teamWithPoints: Team;
-            score: number;
-        };
-
         //List of teams with an additional variable representing cumulative map score
-        const teamScores: Map<string, TeamWithScore> = new Map<string, TeamWithScore>();
+        const teamScores: Map<string, TeamWithScore> = new Map<
+            string,
+            TeamWithScore
+        >();
 
         //Calculate score for each map in our current memory
         this.userScoresForMap.forEach((scores, _) => {
             //Reset team scores for calculation
-            teamScores.forEach(x => x.score = 0);
+            teamScores.forEach((x) => (x.score = 0));
 
             //Add up total team scores for the level
-            scores.forEach(score => {
-
+            scores.forEach((score) => {
                 //Keep existing points if possible
                 const oldTeamWithScore = teamScores.get(score.user.team.id);
                 teamScores.set(score.user.team.id, {
                     teamWithPoints: {
-                        team: oldTeamWithScore?.teamWithPoints.team ?? score.user.team,
-                        points: oldTeamWithScore?.teamWithPoints.points ?? 0
+                        team:
+                            oldTeamWithScore?.teamWithPoints.team ??
+                            score.user.team,
+                        points: oldTeamWithScore?.teamWithPoints.points ?? 0,
                     },
-                    score: (oldTeamWithScore?.score ?? 0) + score.score
+                    score: (oldTeamWithScore?.score ?? 0) + score.score,
                 });
             });
 
             //Sort teams by total score
-            const sortedTeams = Array.from(teamScores.values()).sort((a, b) => a.score - b.score);
+            const sortedTeams = Array.from(teamScores.values()).sort(
+                (a, b) => a.score - b.score
+            );
 
             //Assign points
             for (let i = 0; i < sortedTeams.length; i++) {
-                sortedTeams[i].teamWithPoints.points = sortedTeams[i].teamWithPoints.points + i + 1;
+                sortedTeams[i].teamWithPoints.points =
+                    sortedTeams[i].teamWithPoints.points + i + 1;
             }
 
             //Winning team gets a bonus point
             sortedTeams[sortedTeams.length - 1].teamWithPoints.points++;
 
             //Update outer array
-            sortedTeams.forEach(x => teamScores.set(x.teamWithPoints.team.id, x));
+            sortedTeams.forEach((x) =>
+                teamScores.set(x.teamWithPoints.team.id, x)
+            );
         });
 
-        const points = Array.from(teamScores.values()).map(x => x.teamWithPoints).sort((a, b) => b.points - a.points);
+        const points = Array.from(teamScores.values())
+            .map((x) => x.teamWithPoints)
+            .sort((a, b) => b.points - a.points);
 
         this.broadcastRoundPoints(points);
         return points;
@@ -160,7 +187,11 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             const match = this.currentlyWatchingMatch;
 
             if (match) {
-                match.associated_users = match.associated_users.filter(x => this.taClient.users.find(y => y.guid === x)?.team?.id !== losingTeam.team.id);
+                match.associated_users = match.associated_users.filter(
+                    (x) =>
+                        this.taClient.users.find((y) => y.guid === x)?.team
+                            ?.id !== losingTeam.team.id
+                );
                 this.taClient.updateMatch(match);
                 this.resetScores();
             }
@@ -169,52 +200,58 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
 
     public setTeamsToDisplay(team1: string, team2: string) {
         this.forwarder?.broadcast({
-            type: 'setTeamsToDisplay',
+            type: "setTeamsToDisplay",
             team1,
-            team2
-        })
+            team2,
+        });
     }
 
     public setAudioPlayer(player: number) {
         this.forwarder?.broadcast({
-            type: 'setAudioPlayer',
-            player
-        })
+            type: "setAudioPlayer",
+            player,
+        });
     }
 
     public setFinalsPoints(team1: number, team2: number) {
         this.forwarder?.broadcast({
-            type: 'setFinalsPoints',
+            type: "setFinalsPoints",
             team1,
-            team2
-        })
+            team2,
+        });
     }
 
     private broadcastRoundPoints(teams: Team[]) {
         this.forwarder?.broadcast({
-            type: 'points',
-    
-            teams: teams.map(i => ({
+            type: "points",
+
+            teams: teams.map((i) => ({
                 team: i.team.toObject(),
-                points: i.points
-            }))
+                points: i.points,
+            })),
         });
     }
 
     private transformAndBroadcastMatch(match: Models.Match) {
-        const players = this.taClient.users.filter(x => x.client_type === Models.User.ClientTypes.Player && match.associated_users.includes(x.guid));
-        const coordinator = this.taClient.Coordinators.find(x => match.associated_users.includes(x.guid));
+        const players = this.taClient.users.filter(
+            (x) =>
+                x.client_type === Models.User.ClientTypes.Player &&
+                match.associated_users.includes(x.guid)
+        );
+        const coordinator = this.taClient.Coordinators.find((x) =>
+            match.associated_users.includes(x.guid)
+        );
 
         this.forwarder?.broadcast({
-            type: 'match',
+            type: "match",
             players: players.map(this.transformUser),
             coordinator: coordinator?.name,
             song: {
                 id: match.selected_level?.level_id,
                 name: match.selected_level?.name,
                 characteristic: match.selected_characteristic?.serialized_name,
-                difficulty: match.selected_difficulty
-            }
+                difficulty: match.selected_difficulty,
+            },
         });
     }
 
@@ -224,18 +261,21 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             name: user.name,
             team: {
                 id: user.team?.id,
-                name: user.team?.name
+                name: user.team?.name,
             },
             platformId: user.user_id,
             downloaded: Models.User.DownloadStates[user.download_state],
-            playState: Models.User.PlayStates[user.play_state]
+            playState: Models.User.PlayStates[user.play_state],
         };
     }
 
-    private transformAndBroadcastUser(user: Models.User, overrides?: { type: string }) {
+    private transformAndBroadcastUser(
+        user: Models.User,
+        overrides?: { type: string }
+    ) {
         this.forwarder?.broadcast({
-            type: overrides?.type || 'user',
-            user: this.transformUser(user)
+            type: overrides?.type || "user",
+            user: this.transformUser(user),
         });
     }
 
@@ -243,17 +283,19 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         const player = this.taClient.getPlayer(score.user_guid);
 
         this.forwarder?.broadcast({
-            type: 'score',
+            type: "score",
             score: score.toObject(),
-            user: this.transformUser(player!)
-        })
+            user: this.transformUser(player!),
+        });
     }
 
-    private transformAndBroadcastResult(songFinished: Packets.Push.SongFinished) {
+    private transformAndBroadcastResult(
+        songFinished: Packets.Push.SongFinished
+    ) {
         this.forwarder?.broadcast({
-            type: 'finalScoreForPlayer',
+            type: "finalScoreForPlayer",
             user: songFinished.player.toObject(),
-            score: songFinished.score
-        })
+            score: songFinished.score,
+        });
     }
 }
