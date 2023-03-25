@@ -1,4 +1,4 @@
-import { Client, Models, Packets } from 'tournament-assistant-client';
+import { Client, Models, Packets } from 'bseuc-tournament-assistant-client';
 import { CustomEventEmitter } from './event-emitter.js';
 import { Forwarder } from './forwarder-server.js';
 
@@ -40,7 +40,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         this.forwarder = new Forwarder();
 
         this.taClient = new Client('BSEUC Relay', {
-            url: 'ws://danesaber.cf:2053',
+            url: 'ws://ta.beatsaberchampionship.eu:2053',
         });
 
         this.taClient.on('realtimeScore', (score) => {
