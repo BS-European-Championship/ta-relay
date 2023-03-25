@@ -4,7 +4,6 @@ specifiers:
   '@discordx/importer': ^1.1.10
   '@discordx/pagination': ^3.3.1
   '@types/node': ^18.11.7
-  '@types/tmi.js': ^1.8.3
   '@types/websocket': ^1.0.5
   discord.js: ^14.6.0
   discordx: ^11.4.0
@@ -12,7 +11,6 @@ specifiers:
   http: ^0.0.1-security
   nodemon: ^2.0.20
   prettier: ^2.7.1
-  tmi.js: ^1.8.5
   tournament-assistant-client: ^0.9.1
   ts-node: ^10.9.1
   typescript: 4.8.4
@@ -21,12 +19,10 @@ specifiers:
 dependencies:
   '@discordx/importer': 1.1.10
   '@discordx/pagination': 3.4.1_discord.js@14.7.1
-  '@types/tmi.js': 1.8.3
   discord.js: 14.7.1
   discordx: 11.7.1_discord.js@14.7.1
   dotenv: 16.0.3
   http: 0.0.1-security
-  tmi.js: 1.8.5
   tournament-assistant-client: 0.9.1
   websocket: 1.0.34
 
@@ -172,10 +168,6 @@ packages:
 
   /@types/node/18.14.6:
     resolution: {integrity: sha512-93+VvleD3mXwlLI/xASjw0FzKcwzl3OdTCzm1LaRfqgS21gfFtK3zDXM5Op9TeeMsJVOaJ2VRDpT9q4Y3d0AvA==}
-
-  /@types/tmi.js/1.8.3:
-    resolution: {integrity: sha512-piKPU1DF+Lxnh9BV0gVpbJIMnKOQT6zT0o6NLE0DZgHNW7fGxReRRSp987+Ph1aYiyNWXXbxAeQAovTlEYC1hw==}
-    dev: false
 
   /@types/websocket/1.0.5:
     resolution: {integrity: sha512-NbsqiNX9CnEfC1Z0Vf4mE1SgAJ07JnRYcNex7AJ9zAVzmiGHmjKFEk7O4TJIsgv2B1sLEb6owKFZrACwdYngsQ==}
@@ -551,18 +543,6 @@ packages:
     resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
     dev: false
 
-  /node-fetch/2.6.9:
-    resolution: {integrity: sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-    dependencies:
-      whatwg-url: 5.0.0
-    dev: false
-
   /node-gyp-build/4.6.0:
     resolution: {integrity: sha512-NTZVKn9IylLwUzaKjkas1e4u2DLNcV4rdYagA4PWdPwW87Bi7z+BznyKSRwS/761tV/lzCGXplWsiaMjLqP2zQ==}
     hasBin: true
@@ -693,18 +673,6 @@ packages:
       has-flag: 3.0.0
     dev: true
 
-  /tmi.js/1.8.5:
-    resolution: {integrity: sha512-A9qrydfe1e0VWM9MViVhhxVgvLpnk7pFShVUWePsSTtoi+A1X+Zjdoa7OJd7/YsgHXGj3GkNEvnWop/1WwZuew==}
-    engines: {node: '>=10.0.0'}
-    dependencies:
-      node-fetch: 2.6.9
-      ws: 8.12.1
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-    dev: false
-
   /to-regex-range/5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -737,10 +705,6 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: false
-
-  /tr46/0.0.3:
-    resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
     dev: false
 
   /ts-mixer/6.0.3:
@@ -844,10 +808,6 @@ packages:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
     dev: true
 
-  /webidl-conversions/3.0.1:
-    resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
-    dev: false
-
   /websocket/1.0.34:
     resolution: {integrity: sha512-PRDso2sGwF6kM75QykIesBijKSVceR6jL2G8NGYyq2XrItNC2P5/qL5XeR056GhA+Ly7JMFvJb9I312mJfmqnQ==}
     engines: {node: '>=4.0.0'}
@@ -860,13 +820,6 @@ packages:
       yaeti: 0.0.6
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  /whatwg-url/5.0.0:
-    resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
-    dependencies:
-      tr46: 0.0.3
-      webidl-conversions: 3.0.1
     dev: false
 
   /wrappy/1.0.2:

@@ -1,6 +1,6 @@
-import { Client, Models, Packets } from "tournament-assistant-client";
-import { CustomEventEmitter } from "./event-emitter.js";
-import { Forwarder } from "./forwarder-server.js";
+import { Client, Models, Packets } from 'tournament-assistant-client';
+import { CustomEventEmitter } from './event-emitter.js';
+import { Forwarder } from './forwarder-server.js';
 
 export type TARelayEvents = {
     userFinishedSong: Packets.Push.SongFinished;
@@ -39,19 +39,19 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
 
         this.forwarder = new Forwarder();
 
-        this.taClient = new Client("BSEUC Relay", {
-            url: "ws://tournamentassistant.net:2053",
+        this.taClient = new Client('BSEUC Relay', {
+            url: 'ws://danesaber.cf:2053',
         });
 
-        this.taClient.on("realtimeScore", (score) => {
-            console.log("score:", score);
+        this.taClient.on('realtimeScore', (score) => {
+            console.log('score:', score);
 
             this.transformAndBroadcastScore(score.data);
-            this.emit("scoreRecieved", score.data);
+            this.emit('scoreRecieved', score.data);
         });
 
-        this.taClient.on("songFinished", (songFinished) => {
-            console.log("songFinished:", songFinished);
+        this.taClient.on('songFinished', (songFinished) => {
+            console.log('songFinished:', songFinished);
 
             //Add the score to the results list
             let existingScores =
@@ -68,7 +68,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
             );
 
             this.transformAndBroadcastResult(songFinished.data);
-            this.emit("userFinishedSong", songFinished.data);
+            this.emit('userFinishedSong', songFinished.data);
 
             const matchPlayerCount =
                 this.taClient.Players.filter((x) =>
@@ -80,43 +80,43 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
                 this.userScoresForMap.get(songFinished.data.beatmap.level_id)
                     ?.length === matchPlayerCount
             ) {
-                this.emit("allPlayersFinishedSong", {});
+                this.emit('allPlayersFinishedSong', {});
             }
         });
 
-        this.taClient.on("matchCreated", (matchCreated) => {
-            console.log("matchCreated:", matchCreated);
+        this.taClient.on('matchCreated', (matchCreated) => {
+            console.log('matchCreated:', matchCreated);
 
             matchCreated.data.associated_users.push(this.taClient.Self.guid);
             this.taClient.updateMatch(matchCreated.data);
 
             this.currentlyWatchingMatch = matchCreated.data;
 
-            this.emit("matchCreated", matchCreated.data);
+            this.emit('matchCreated', matchCreated.data);
         });
 
-        this.taClient.on("matchUpdated", (matchUpdated) => {
-            console.log("matchUpdated:", matchUpdated);
+        this.taClient.on('matchUpdated', (matchUpdated) => {
+            console.log('matchUpdated:', matchUpdated);
 
             this.transformAndBroadcastMatch(matchUpdated.data);
         });
 
-        this.taClient.on("playSong", (playSong) => {
-            console.log("playSong:", playSong);
+        this.taClient.on('playSong', (playSong) => {
+            console.log('playSong:', playSong);
 
-            this.forwarder?.broadcast({ type: "playSong" });
+            this.forwarder?.broadcast({ type: 'playSong' });
         });
 
-        this.taClient.on("userUpdated", (userUpdated) => {
-            console.log("userUpdated:", userUpdated);
+        this.taClient.on('userUpdated', (userUpdated) => {
+            console.log('userUpdated:', userUpdated);
 
             this.transformAndBroadcastUser(userUpdated.data);
         });
 
-        this.taClient.on("userLeft", (userLeft) => {
-            console.log("userLeft:", userLeft);
+        this.taClient.on('userLeft', (userLeft) => {
+            console.log('userLeft:', userLeft);
 
-            this.transformAndBroadcastUser(userLeft.data, { type: "userLeft" });
+            this.transformAndBroadcastUser(userLeft.data, { type: 'userLeft' });
         });
     }
 
@@ -200,7 +200,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
 
     public setTeamsToDisplay(team1: string, team2: string) {
         this.forwarder?.broadcast({
-            type: "setTeamsToDisplay",
+            type: 'setTeamsToDisplay',
             team1,
             team2,
         });
@@ -208,14 +208,14 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
 
     public setAudioPlayer(player: number) {
         this.forwarder?.broadcast({
-            type: "setAudioPlayer",
+            type: 'setAudioPlayer',
             player,
         });
     }
 
     public setFinalsPoints(team1: number, team2: number) {
         this.forwarder?.broadcast({
-            type: "setFinalsPoints",
+            type: 'setFinalsPoints',
             team1,
             team2,
         });
@@ -223,7 +223,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
 
     private broadcastRoundPoints(teams: Team[]) {
         this.forwarder?.broadcast({
-            type: "points",
+            type: 'points',
 
             teams: teams.map((i) => ({
                 team: i.team.toObject(),
@@ -243,7 +243,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         );
 
         this.forwarder?.broadcast({
-            type: "match",
+            type: 'match',
             players: players.map(this.transformUser),
             coordinator: coordinator?.name,
             song: {
@@ -274,7 +274,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         overrides?: { type: string }
     ) {
         this.forwarder?.broadcast({
-            type: overrides?.type || "user",
+            type: overrides?.type || 'user',
             user: this.transformUser(user),
         });
     }
@@ -283,7 +283,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         const player = this.taClient.getPlayer(score.user_guid);
 
         this.forwarder?.broadcast({
-            type: "score",
+            type: 'score',
             score: score.toObject(),
             user: this.transformUser(player!),
         });
@@ -293,7 +293,7 @@ export class TARelay extends CustomEventEmitter<TARelayEvents> {
         songFinished: Packets.Push.SongFinished
     ) {
         this.forwarder?.broadcast({
-            type: "finalScoreForPlayer",
+            type: 'finalScoreForPlayer',
             user: songFinished.player.toObject(),
             score: songFinished.score,
         });
